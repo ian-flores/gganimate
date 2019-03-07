@@ -7,8 +7,12 @@ test_that("area works", {
     y = runif(20),
     f = rep(c('a', 'b'), each = 10)
   )
-  p <- ggplot(df) + geom_area(aes(x, y)) + transition_states(f, 2, 1)
+  p <- ggplot(df) +
+          geom_area(aes(x, y)) +
+          transition_states(f, 2, 1)
+
   expect_silent(prerender(p, 50))
+
 })
 
 test_that('bar works', {
@@ -56,4 +60,27 @@ test_that('contour works', {
   )
   p <- ggplot(df) + geom_contour(aes(x, y, z = z)) + transition_states(f, 2, 1)
   expect_silent(prerender(p, 50))
+})
+
+test_that('transition_state parameters test', {
+  set.seed(1)
+  df <- data.frame(
+    x = c(1:10, 1:10),
+    y = runif(20),
+    f = rep(c('a', 'b'), each = 10)
+  )
+  p <- ggplot(df) +
+    geom_area(aes(x, y)) +
+    transition_states(f, 2, 1)
+
+  transition_list <- p$transition$params
+
+  state_unquoted <- get_expr(transition_list$states_quo)
+
+  expect_equal(as.character(state_unquoted), 'f')
+  expect_equal(typeof(state_unquoted), 'symbol')
+  expect_false(typeof(state_unquoted) == 'character')
+  expect_true(transition_list$wrap)
+  expect_true(transition_list$transition_length == 2)
+  expect_false(transition_list$state_length == 2)
 })
